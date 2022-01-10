@@ -23,12 +23,16 @@
 
 HCSR04 hc(13, 12); // Initialize Pin D7, D6
 
-String serverName = "http://xx:4567/oil-level";
+String serverName = "http://xxx/oil-level";
+
+void take_reading() {
+
+}
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  WiFi.begin("xxxx", "xx");
+  WiFi.begin("xxx", "xxx");
 
   Serial.print("Connecting");
   while (WiFi.status() != WL_CONNECTED)
@@ -40,29 +44,31 @@ void setup() {
 
   Serial.print("Connected, IP address: ");
   Serial.println(WiFi.localIP());
-
+  String distance_reading = "0.00";
+  while (distance_reading == "0.00") {
+    // put your main code here, to run repeatedly:
+    distance_reading = String(hc.dist());
+    //Serial.println(hc.dist()); // Print in centimeters the value from the sensor
+    if(WiFi.status()== WL_CONNECTED){
+        WiFiClient client;
+        HTTPClient http;
+        http.begin(client, serverName);
+        http.addHeader("Content-Type", "application/json");
+        String jsonString = "{\"level\":\"" + distance_reading + "\"}";
+        if((String(hc.dist()))!= "0.00") {
+            int httpResponseCode = http.POST(jsonString);
+            Serial.print("HTTP Response code: ");
+            Serial.println(httpResponseCode);
+        } 
+        // Free resources
+        http.end();
+      }
+  }
+  // Sleep
+  Serial.println("ESP8266 in sleep mode");
+  ESP.deepSleep(86400000);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  int delaytime = 100;
-  Serial.println(hc.dist()); // Print in centimeters the value from the sensor
-  if(WiFi.status()== WL_CONNECTED){
-      WiFiClient client;
-      HTTPClient http;
-      http.begin(client, serverName);
-      http.addHeader("Content-Type", "application/json");
-      String jsonString = "{\"level\":\"" + String(hc.dist()) + "\"}";
-      if((String(hc.dist()))!= "0.00") {
-          int httpResponseCode = http.POST(jsonString);
-          Serial.print("HTTP Response code: ");
-          Serial.println(httpResponseCode);
-          //int delaytime = 86400000;
-          int delaytime = 9000;
-      }
-        
-      // Free resources
-      http.end();
-    }
-  delay(delaytime);
+
 }
