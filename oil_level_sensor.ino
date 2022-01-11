@@ -23,7 +23,7 @@
 
 HCSR04 hc(13, 12); // Initialize Pin D7, D6
 
-String serverName = "http://xxx/oil-level";
+String serverName = "http://192.168.1.xxx:xxx/oil-level";
 
 void take_reading() {
 
@@ -50,23 +50,25 @@ void setup() {
     distance_reading = String(hc.dist());
     //Serial.println(hc.dist()); // Print in centimeters the value from the sensor
     if(WiFi.status()== WL_CONNECTED){
-        WiFiClient client;
-        HTTPClient http;
-        http.begin(client, serverName);
-        http.addHeader("Content-Type", "application/json");
-        String jsonString = "{\"level\":\"" + distance_reading + "\"}";
-        if((String(hc.dist()))!= "0.00") {
+        if(distance_reading!= "0.00") {
+            WiFiClient client;
+            HTTPClient http;
+            http.begin(client, serverName);
+            http.addHeader("Content-Type", "application/json");
+            String jsonString = "{\"level\":\"" + distance_reading + "\"}";
             int httpResponseCode = http.POST(jsonString);
             Serial.print("HTTP Response code: ");
             Serial.println(httpResponseCode);
+            Serial.print(distance_reading);
+            // Free resources
+            http.end();
         } 
-        // Free resources
-        http.end();
+
       }
   }
   // Sleep
   Serial.println("ESP8266 in sleep mode");
-  ESP.deepSleep(86400000);
+  ESP.deepSleep(8.64e10);
 }
 
 void loop() {
